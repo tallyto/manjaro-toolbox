@@ -253,49 +253,14 @@ class Handler(BaseHTTPRequestHandler):
                 self._send_json(200, sudo_error)
                 return
 
-            pacman_packages = [package for package in packages if ALLOWED_PACKAGES[package] == 'pacman']
-            aur_packages = [package for package in packages if ALLOWED_PACKAGES[package] == 'aur']
-            outputs = []
-            ok = True
-            code = 0
-
-            if pacman_packages:
-                proc = run_sudo(['pacman', '-Rns', '--noconfirm', *pacman_packages], password, 60 * 30)
-                outputs.append('== Remoção de pacotes oficiais ==\n' + ((proc.stdout or '') + (proc.stderr or '')).strip())
-                ok = ok and proc.returncode == 0
-                code = proc.returncode if proc.returncode != 0 else code
-                if proc.returncode != 0:
-                    self._send_json(200, {
-                        'ok': False,
-                        'code': proc.returncode,
-                        'output': '\n\n'.join(part for part in outputs if part).strip() or '(sem saída)'
-                    })
-                    return
-
-            if aur_packages:
-                if not shutil.which('yay'):
-                    self._send_json(200, {
-                        'ok': False,
-                        'code': 127,
-                        'output': 'yay não está instalado. Não foi possível remover pacotes AUR: ' + ' '.join(aur_packages)
-                    })
-                    return
-                proc = subprocess.run(
-                    ['yay', '-Rns', '--noconfirm', *aur_packages],
-                    input=sudo_input(password),
-                    cwd=str(ROOT),
-                    text=True,
-                    capture_output=True,
-                    timeout=60 * 30,
-                )
-                outputs.append('== Remoção de pacotes AUR ==\n' + ((proc.stdout or '') + (proc.stderr or '')).strip())
-                ok = ok and proc.returncode == 0
-                code = proc.returncode if proc.returncode != 0 else code
-
+            # AUR packages are also registered in pacman's local database after installation,
+            # so removal should use pacman too. Calling yay here can require an interactive TTY.
+            proc = run_sudo(['pacman', '-Rns', '--noconfirm', *packages], password, 60 * 30)
+            output = (proc.stdout or '') + (proc.stderr or '')
             self._send_json(200, {
-                'ok': ok,
-                'code': code,
-                'output': '\n\n'.join(part for part in outputs if part).strip() or '(sem saída)'
+                'ok': proc.returncode == 0,
+                'code': proc.returncode,
+                'output': ('== Remoção de pacotes ==\n' + output.strip()) if output.strip() else '(sem saída)'
             })
         except subprocess.TimeoutExpired:
             self._send_json(408, {'ok': False, 'error': 'Tempo limite excedido.'})

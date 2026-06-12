@@ -1,9 +1,19 @@
 const actionsEl = document.querySelector('#actions')
+const packagesEl = document.querySelector('#packages')
 const outputEl = document.querySelector('#output')
 const statusText = document.querySelector('#status-text')
 const statusDot = document.querySelector('#status-dot')
 const refreshBtn = document.querySelector('#refresh')
 const clearBtn = document.querySelector('#clear')
+const passwordInput = document.querySelector('#sudo-password')
+const installSelectedBtn = document.querySelector('#install-selected')
+const selectRecommendedBtn = document.querySelector('#select-recommended')
+const clearSelectionBtn = document.querySelector('#clear-selection')
+
+const recommendedPackages = new Set([
+  'vlc', 'btop', 'ripgrep', 'bat', 'eza', 'fzf', 'fd', 'dust', 'duf',
+  'tldr', 'jq', 'yq', 'httpie', 'pacman-contrib', 'reflector'
+])
 
 function setStatus(text, state = 'ready') {
   statusText.textContent = text
@@ -17,6 +27,40 @@ function dangerLabel(danger) {
     interactive: 'Interativo',
     destructive: 'Remove pacotes'
   }[danger] || danger
+}
+
+function selectedPackages() {
+  return Array.from(document.querySelectorAll('[data-package]:checked')).map(input => input.value)
+}
+
+function setButtonsDisabled(disabled) {
+  for (const button of document.querySelectorAll('button')) button.disabled = disabled
+}
+
+async function loadPackages() {
+  const res = await fetch('/api/packages')
+  const data = await res.json()
+  packagesEl.innerHTML = ''
+
+  for (const group of data.groups) {
+    const section = document.createElement('article')
+    section.className = 'package-group'
+    section.innerHTML = `<h3>${group.title}</h3>`
+
+    for (const item of group.packages) {
+      const label = document.createElement('label')
+      label.className = 'package-item'
+      label.innerHTML = `
+        <input type="checkbox" data-package value="${item.name}">
+        <span>
+          <strong>${item.name}</strong>
+          <small>${item.description}</small>
+        </span>
+      `
+      section.appendChild(label)
+    }
+    packagesEl.appendChild(section)
+  }
 }
 
 async function loadActions() {
@@ -55,7 +99,7 @@ async function runAction(action) {
   outputEl.textContent = `Executando: ${action.title}
 
 `
-  for (const button of document.querySelectorAll('button')) button.disabled = true
+  setButtonsDisabled(true)
 
   try {
     const res = await fetch('/api/run', {
@@ -70,10 +114,59 @@ async function runAction(action) {
     outputEl.textContent += String(err)
     setStatus('Erro ao executar ação', 'error')
   } finally {
-    for (const button of document.querySelectorAll('button')) button.disabled = false
+    setButtonsDisabled(false)
   }
 }
 
-refreshBtn.addEventListener('click', loadActions)
+async function installSelected() {
+  const packages = selectedPackages()
+  if (packages.length === 0) {
+    alert('Selecione pelo menos um pacote.')
+    return
+  }
+  if (!passwordInput.value) {
+    const ok = confirm('Sem senha preenchida, o sudo só funciona se já estiver autenticado no terminal. Continuar?')
+    if (!ok) return
+  }
+
+  setStatus('Instalando pacotes selecionados...', 'busy')
+  outputEl.textContent = `Instalando pacotes:
+${packages.join(' ')}
+
+`
+  setButtonsDisabled(true)
+
+  try {
+    const res = await fetch('/api/install-selected', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ packages, password: passwordInput.value })
+    })
+    const data = await res.json()
+    outputEl.textContent += data.output || data.error || '(sem saída)'
+    setStatus(data.ok ? 'Instalação concluída' : `Instalação falhou ${data.code ?? ''}`, data.ok ? 'ready' : 'error')
+  } catch (err) {
+    outputEl.textContent += String(err)
+    setStatus('Erro ao instalar pacotes', 'error')
+  } finally {
+    passwordInput.value = ''
+    setButtonsDisabled(false)
+  }
+}
+
+refreshBtn.addEventListener('click', async () => {
+  await loadPackages()
+  await loadActions()
+})
 clearBtn.addEventListener('click', () => { outputEl.textContent = 'Saída limpa.' })
-loadActions()
+installSelectedBtn.addEventListener('click', installSelected)
+selectRecommendedBtn.addEventListener('click', () => {
+  for (const input of document.querySelectorAll('[data-package]')) {
+    input.checked = recommendedPackages.has(input.value)
+  }
+})
+clearSelectionBtn.addEventListener('click', () => {
+  for (const input of document.querySelectorAll('[data-package]')) input.checked = false
+})
+
+Promise.all([loadPackages(), loadActions()])

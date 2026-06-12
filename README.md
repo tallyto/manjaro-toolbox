@@ -1,6 +1,6 @@
 # Manjaro Toolbox
 
-Interface local para organizar comandos de manutenção, limpeza e instalação no Manjaro/Arch.
+Interface local para organizar comandos de manutenção, limpeza e instalação no Manjaro/Arch. Ela permite selecionar pacotes visualmente e informar a senha sudo para instalar os itens escolhidos.
 
 O projeto foi criado para deixar em um só lugar os comandos que usamos para:
 
@@ -25,9 +25,9 @@ http://127.0.0.1:8787
 
 ## Segurança
 
-O app não executa comandos livres digitados pelo usuário. Ele só roda scripts existentes na pasta `scripts/` e cadastrados em `actions.json`.
+O app não executa comandos livres digitados pelo usuário. Ele só roda scripts existentes na pasta `scripts/`, ações cadastradas em `actions.json` e pacotes de uma lista permitida no `app.py`.
 
-Ações que usam `sudo` vão pedir senha no terminal onde o app está rodando.
+Na instalação selecionada, a senha sudo é enviada somente para o processo atual via `sudo -S` e não é salva. Ações rápidas que usam scripts ainda podem pedir senha no terminal onde o app está rodando.
 
 ## Ações Disponíveis
 

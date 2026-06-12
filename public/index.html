@@ -21,6 +21,27 @@
       <span id="status-text">Pronto</span>
     </section>
 
+    <section class="sudo-panel">
+      <div>
+        <h2>Instalação Selecionada</h2>
+        <p>Escolha os pacotes, informe a senha sudo e instale tudo de uma vez. A senha não é salva.</p>
+      </div>
+      <label>
+        Senha sudo
+        <input id="sudo-password" type="password" autocomplete="current-password" placeholder="Digite sua senha">
+      </label>
+      <div class="panel-actions">
+        <button id="select-recommended" type="button" class="secondary">Selecionar recomendados</button>
+        <button id="clear-selection" type="button" class="secondary">Limpar seleção</button>
+        <button id="install-selected" type="button">Instalar selecionados</button>
+      </div>
+    </section>
+
+    <section id="packages" class="package-grid"></section>
+
+    <section class="section-title">
+      <h2>Ações Rápidas</h2>
+    </section>
     <section id="actions" class="grid"></section>
 
     <section class="output-panel">

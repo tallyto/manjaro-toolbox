@@ -88,10 +88,29 @@ def find_action(action_id):
     return None
 
 
+def sudo_input(password):
+    if not password:
+        return None
+    # sudo may ask again after one failed read; provide enough lines without storing it.
+    return (password + '\n') * 3
+
+
 def sudo_command(command, password):
     if password:
-        return ['sudo', '-S', '-p', '', *command], password + '\n'
+        return ['sudo', '-S', '-p', '', *command], sudo_input(password)
     return ['sudo', *command], None
+
+
+def run_sudo(command, password, timeout):
+    full_command, stdin = sudo_command(command, password)
+    return subprocess.run(
+        full_command,
+        input=stdin,
+        cwd=str(ROOT),
+        text=True,
+        capture_output=True,
+        timeout=timeout,
+    )
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -207,16 +226,19 @@ class Handler(BaseHTTPRequestHandler):
             self._send_json(400, {'ok': False, 'error': 'Selecione pelo menos um pacote.'})
             return
 
-        command, stdin = sudo_command(['pacman', '-S', '--needed', '--noconfirm', *packages], password)
         try:
-            proc = subprocess.run(
-                command,
-                input=stdin,
-                cwd=str(ROOT),
-                text=True,
-                capture_output=True,
-                timeout=60 * 45,
-            )
+            if password:
+                validate = run_sudo(['-v'], password, 30)
+                if validate.returncode != 0:
+                    output = (validate.stdout or '') + (validate.stderr or '')
+                    self._send_json(200, {
+                        'ok': False,
+                        'code': validate.returncode,
+                        'output': 'Falha ao validar sudo. Verifique a senha digitada.\n\n' + (output.strip() or '(sem saída)')
+                    })
+                    return
+
+            proc = run_sudo(['pacman', '-S', '--needed', '--noconfirm', *packages], password, 60 * 45)
             output = (proc.stdout or '') + (proc.stderr or '')
             self._send_json(200, {
                 'ok': proc.returncode == 0,

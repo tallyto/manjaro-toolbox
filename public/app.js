@@ -124,7 +124,8 @@ async function installSelected() {
     alert('Selecione pelo menos um pacote.')
     return
   }
-  if (!passwordInput.value) {
+  const password = passwordInput.value
+  if (!password) {
     const ok = confirm('Sem senha preenchida, o sudo só funciona se já estiver autenticado no terminal. Continuar?')
     if (!ok) return
   }
@@ -140,7 +141,7 @@ ${packages.join(' ')}
     const res = await fetch('/api/install-selected', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ packages, password: passwordInput.value })
+      body: JSON.stringify({ packages, password })
     })
     const data = await res.json()
     outputEl.textContent += data.output || data.error || '(sem saída)'

@@ -14,6 +14,8 @@ const togglePasswordBtn = document.querySelector('#toggle-password')
 const uninstallSelectedBtn = document.querySelector('#uninstall-selected')
 const copyInstallToUninstallBtn = document.querySelector('#copy-install-to-uninstall')
 const clearUninstallSelectionBtn = document.querySelector('#clear-uninstall-selection')
+const installCountEl = document.querySelector('#install-count')
+const uninstallCountEl = document.querySelector('#uninstall-count')
 
 const recommendedPackages = new Set([
   'vlc', 'btop', 'ripgrep', 'bat', 'eza', 'fzf', 'fd', 'dust', 'duf',
@@ -42,8 +44,20 @@ function selectedUninstallPackages() {
   return Array.from(document.querySelectorAll('[data-uninstall-package]:checked')).map(input => input.value)
 }
 
+function updateCounts() {
+  const n = selectedPackages().length
+  const u = selectedUninstallPackages().length
+  installCountEl.textContent = n > 0 ? n : ''
+  uninstallCountEl.textContent = u > 0 ? u : ''
+}
+
 function setButtonsDisabled(disabled) {
   for (const button of document.querySelectorAll('button')) button.disabled = disabled
+}
+
+function appendOutput(text) {
+  outputEl.textContent += text
+  outputEl.scrollTop = outputEl.scrollHeight
 }
 
 function renderPackageGroups(container, groups, mode) {
@@ -75,6 +89,7 @@ async function loadPackages() {
   const data = await res.json()
   renderPackageGroups(packagesEl, data.groups, 'install')
   renderPackageGroups(uninstallPackagesEl, data.groups, 'uninstall')
+  updateCounts()
 }
 
 async function loadActions() {
@@ -110,9 +125,7 @@ async function runAction(action) {
     if (!ok) return
   }
   setStatus(`Executando ${action.title}...`, 'busy')
-  outputEl.textContent = `Executando: ${action.title}
-
-`
+  outputEl.textContent = `Executando: ${action.title}\n\n`
   setButtonsDisabled(true)
 
   try {
@@ -122,10 +135,10 @@ async function runAction(action) {
       body: JSON.stringify({ id: action.id })
     })
     const data = await res.json()
-    outputEl.textContent += data.output || data.error || '(sem saída)'
+    appendOutput(data.output || data.error || '(sem saída)')
     setStatus(data.ok ? 'Concluído' : `Finalizado com erro ${data.code ?? ''}`, data.ok ? 'ready' : 'error')
   } catch (err) {
-    outputEl.textContent += String(err)
+    appendOutput(String(err))
     setStatus('Erro ao executar ação', 'error')
   } finally {
     setButtonsDisabled(false)
@@ -145,10 +158,7 @@ async function installSelected() {
   }
 
   setStatus('Instalando pacotes selecionados...', 'busy')
-  outputEl.textContent = `Instalando pacotes:
-${packages.join(' ')}
-
-`
+  outputEl.textContent = `Instalando pacotes:\n${packages.join(' ')}\n\n`
   setButtonsDisabled(true)
 
   try {
@@ -158,10 +168,10 @@ ${packages.join(' ')}
       body: JSON.stringify({ packages, password })
     })
     const data = await res.json()
-    outputEl.textContent += data.output || data.error || '(sem saída)'
+    appendOutput(data.output || data.error || '(sem saída)')
     setStatus(data.ok ? 'Instalação concluída' : `Instalação falhou ${data.code ?? ''}`, data.ok ? 'ready' : 'error')
   } catch (err) {
-    outputEl.textContent += String(err)
+    appendOutput(String(err))
     setStatus('Erro ao instalar pacotes', 'error')
   } finally {
     passwordInput.value = ''
@@ -195,16 +205,19 @@ async function uninstallSelected() {
       body: JSON.stringify({ packages, password })
     })
     const data = await res.json()
-    outputEl.textContent += data.output || data.error || '(sem saída)'
+    appendOutput(data.output || data.error || '(sem saída)')
     setStatus(data.ok ? 'Desinstalação concluída' : `Desinstalação falhou ${data.code ?? ''}`, data.ok ? 'ready' : 'error')
   } catch (err) {
-    outputEl.textContent += String(err)
+    appendOutput(String(err))
     setStatus('Erro ao desinstalar pacotes', 'error')
   } finally {
     passwordInput.value = ''
     setButtonsDisabled(false)
   }
 }
+
+packagesEl.addEventListener('change', updateCounts)
+uninstallPackagesEl.addEventListener('change', updateCounts)
 
 refreshBtn.addEventListener('click', async () => {
   await loadPackages()
@@ -224,18 +237,22 @@ selectRecommendedBtn.addEventListener('click', () => {
   for (const input of document.querySelectorAll('[data-package]')) {
     input.checked = recommendedPackages.has(input.value)
   }
+  updateCounts()
 })
 clearSelectionBtn.addEventListener('click', () => {
   for (const input of document.querySelectorAll('[data-package]')) input.checked = false
+  updateCounts()
 })
 copyInstallToUninstallBtn.addEventListener('click', () => {
   const selected = new Set(selectedPackages())
   for (const input of document.querySelectorAll('[data-uninstall-package]')) {
     input.checked = selected.has(input.value)
   }
+  updateCounts()
 })
 clearUninstallSelectionBtn.addEventListener('click', () => {
   for (const input of document.querySelectorAll('[data-uninstall-package]')) input.checked = false
+  updateCounts()
 })
 
 Promise.all([loadPackages(), loadActions()])

@@ -9,25 +9,35 @@
 <body>
   <main class="shell">
     <header class="topbar">
-      <div>
-        <p class="eyebrow">Manjaro / Arch</p>
-        <h1>Manjaro Toolbox</h1>
+      <div class="brand">
+        <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="4 17 10 11 4 5"/>
+          <line x1="12" y1="19" x2="20" y2="19"/>
+        </svg>
+        <div>
+          <p class="eyebrow">Manjaro / Arch</p>
+          <h1>Manjaro Toolbox</h1>
+        </div>
       </div>
-      <button id="refresh" type="button">Atualizar</button>
+      <div class="topbar-end">
+        <section class="status" aria-live="polite">
+          <span id="status-dot"></span>
+          <span id="status-text">Pronto</span>
+        </section>
+        <button id="refresh" type="button" class="secondary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          Atualizar
+        </button>
+      </div>
     </header>
 
-    <section class="status" aria-live="polite">
-      <span id="status-dot"></span>
-      <span id="status-text">Pronto</span>
-    </section>
-
     <section class="sudo-panel">
-      <div>
+      <div class="panel-info">
         <h2>Instalação Selecionada</h2>
         <p>Escolha os pacotes, informe a senha sudo e instale tudo de uma vez. A senha não é salva.</p>
       </div>
       <label class="password-field">
-        Senha sudo
+        <span class="field-label">Senha sudo</span>
         <span class="password-control">
           <input id="sudo-password" type="password" autocomplete="current-password" placeholder="Digite sua senha">
           <button id="toggle-password" type="button" class="secondary" aria-pressed="false">Mostrar</button>
@@ -37,36 +47,52 @@
       <div class="panel-actions">
         <button id="select-recommended" type="button" class="secondary">Selecionar recomendados</button>
         <button id="clear-selection" type="button" class="secondary">Limpar seleção</button>
-        <button id="install-selected" type="button">Instalar selecionados</button>
+        <button id="install-selected" type="button">
+          Instalar selecionados
+          <span id="install-count" class="btn-badge" aria-hidden="true"></span>
+        </button>
       </div>
     </section>
 
+    <div class="section-header">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+      <h2>Pacotes para Instalar</h2>
+    </div>
     <section id="packages" class="package-grid"></section>
 
     <section class="uninstall-panel">
-      <div>
+      <div class="panel-info">
         <h2>Desinstalação Selecionada</h2>
         <p>Selecione pacotes da lista permitida para remover com dependências não utilizadas.</p>
       </div>
       <div class="panel-actions">
         <button id="copy-install-to-uninstall" type="button" class="secondary">Copiar seleção acima</button>
         <button id="clear-uninstall-selection" type="button" class="secondary">Limpar remoção</button>
-        <button id="uninstall-selected" type="button" class="danger">Desinstalar selecionados</button>
+        <button id="uninstall-selected" type="button" class="danger">
+          Desinstalar selecionados
+          <span id="uninstall-count" class="btn-badge" aria-hidden="true"></span>
+        </button>
       </div>
     </section>
 
+    <div class="section-header uninstall-header">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+      <h2>Pacotes para Desinstalar</h2>
+    </div>
     <section id="uninstall-packages" class="package-grid uninstall-grid"></section>
 
-    <section class="section-title">
+    <div class="section-header">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
       <h2>Ações Rápidas</h2>
-    </section>
+    </div>
     <section id="actions" class="grid"></section>
 
+    <div class="section-header">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+      <h2>Terminal</h2>
+      <button id="clear" type="button" class="secondary sm">Limpar</button>
+    </div>
     <section class="output-panel">
-      <div class="output-header">
-        <h2>Saída</h2>
-        <button id="clear" type="button">Limpar</button>
-      </div>
       <pre id="output">Selecione uma ação para executar.</pre>
     </section>
   </main>

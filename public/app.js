@@ -1,5 +1,6 @@
 const actionsEl = document.querySelector('#actions')
 const packagesEl = document.querySelector('#packages')
+const uninstallPackagesEl = document.querySelector('#uninstall-packages')
 const outputEl = document.querySelector('#output')
 const statusText = document.querySelector('#status-text')
 const statusDot = document.querySelector('#status-dot')
@@ -10,6 +11,9 @@ const installSelectedBtn = document.querySelector('#install-selected')
 const selectRecommendedBtn = document.querySelector('#select-recommended')
 const clearSelectionBtn = document.querySelector('#clear-selection')
 const togglePasswordBtn = document.querySelector('#toggle-password')
+const uninstallSelectedBtn = document.querySelector('#uninstall-selected')
+const copyInstallToUninstallBtn = document.querySelector('#copy-install-to-uninstall')
+const clearUninstallSelectionBtn = document.querySelector('#clear-uninstall-selection')
 
 const recommendedPackages = new Set([
   'vlc', 'btop', 'ripgrep', 'bat', 'eza', 'fzf', 'fd', 'dust', 'duf',
@@ -34,25 +38,27 @@ function selectedPackages() {
   return Array.from(document.querySelectorAll('[data-package]:checked')).map(input => input.value)
 }
 
+function selectedUninstallPackages() {
+  return Array.from(document.querySelectorAll('[data-uninstall-package]:checked')).map(input => input.value)
+}
+
 function setButtonsDisabled(disabled) {
   for (const button of document.querySelectorAll('button')) button.disabled = disabled
 }
 
-async function loadPackages() {
-  const res = await fetch('/api/packages')
-  const data = await res.json()
-  packagesEl.innerHTML = ''
-
-  for (const group of data.groups) {
+function renderPackageGroups(container, groups, mode) {
+  container.innerHTML = ''
+  for (const group of groups) {
     const section = document.createElement('article')
     section.className = 'package-group'
     section.innerHTML = `<h3>${group.title}</h3>`
 
     for (const item of group.packages) {
+      const attr = mode === 'uninstall' ? 'data-uninstall-package' : 'data-package'
       const label = document.createElement('label')
       label.className = 'package-item'
       label.innerHTML = `
-        <input type="checkbox" data-package value="${item.name}">
+        <input type="checkbox" ${attr} value="${item.name}">
         <span>
           <strong>${item.name}${item.source === 'aur' ? ' · AUR' : ''}</strong>
           <small>${item.description}</small>
@@ -60,8 +66,15 @@ async function loadPackages() {
       `
       section.appendChild(label)
     }
-    packagesEl.appendChild(section)
+    container.appendChild(section)
   }
+}
+
+async function loadPackages() {
+  const res = await fetch('/api/packages')
+  const data = await res.json()
+  renderPackageGroups(packagesEl, data.groups, 'install')
+  renderPackageGroups(uninstallPackagesEl, data.groups, 'uninstall')
 }
 
 async function loadActions() {
@@ -156,6 +169,43 @@ ${packages.join(' ')}
   }
 }
 
+async function uninstallSelected() {
+  const packages = selectedUninstallPackages()
+  if (packages.length === 0) {
+    alert('Selecione pelo menos um pacote para desinstalar.')
+    return
+  }
+  const ok = confirm(`Desinstalar estes pacotes e dependências não utilizadas?\n\n${packages.join(' ')}`)
+  if (!ok) return
+
+  const password = passwordInput.value
+  if (!password) {
+    const continueWithoutPassword = confirm('Sem senha preenchida, o sudo só funciona se já estiver autenticado no terminal. Continuar?')
+    if (!continueWithoutPassword) return
+  }
+
+  setStatus('Desinstalando pacotes selecionados...', 'busy')
+  outputEl.textContent = `Desinstalando pacotes:\n${packages.join(' ')}\n\n`
+  setButtonsDisabled(true)
+
+  try {
+    const res = await fetch('/api/uninstall-selected', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ packages, password })
+    })
+    const data = await res.json()
+    outputEl.textContent += data.output || data.error || '(sem saída)'
+    setStatus(data.ok ? 'Desinstalação concluída' : `Desinstalação falhou ${data.code ?? ''}`, data.ok ? 'ready' : 'error')
+  } catch (err) {
+    outputEl.textContent += String(err)
+    setStatus('Erro ao desinstalar pacotes', 'error')
+  } finally {
+    passwordInput.value = ''
+    setButtonsDisabled(false)
+  }
+}
+
 refreshBtn.addEventListener('click', async () => {
   await loadPackages()
   await loadActions()
@@ -169,6 +219,7 @@ togglePasswordBtn.addEventListener('click', () => {
   passwordInput.focus()
 })
 installSelectedBtn.addEventListener('click', installSelected)
+uninstallSelectedBtn.addEventListener('click', uninstallSelected)
 selectRecommendedBtn.addEventListener('click', () => {
   for (const input of document.querySelectorAll('[data-package]')) {
     input.checked = recommendedPackages.has(input.value)
@@ -176,6 +227,15 @@ selectRecommendedBtn.addEventListener('click', () => {
 })
 clearSelectionBtn.addEventListener('click', () => {
   for (const input of document.querySelectorAll('[data-package]')) input.checked = false
+})
+copyInstallToUninstallBtn.addEventListener('click', () => {
+  const selected = new Set(selectedPackages())
+  for (const input of document.querySelectorAll('[data-uninstall-package]')) {
+    input.checked = selected.has(input.value)
+  }
+})
+clearUninstallSelectionBtn.addEventListener('click', () => {
+  for (const input of document.querySelectorAll('[data-uninstall-package]')) input.checked = false
 })
 
 Promise.all([loadPackages(), loadActions()])

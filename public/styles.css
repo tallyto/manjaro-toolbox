@@ -38,7 +38,7 @@ button {
   cursor: pointer;
 }
 button.secondary { background: #fff; color: #202124; }
-button.warn { background: #8d3f22; border-color: #8d3f22; }
+button.warn, button.danger { background: #8d3f22; border-color: #8d3f22; }
 button:disabled { opacity: .55; cursor: progress; }
 .status {
   display: flex;
@@ -200,3 +200,20 @@ pre {
 @media (max-width: 760px) {
   .sudo-panel { grid-template-columns: 1fr; }
 }
+
+.unpack-note { color: #6f665c; }
+.unpack-note strong { color: #202124; }
+.unregister { opacity: .8; }
+.uninstall-panel {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr);
+  gap: 12px;
+  background: #fff8f4;
+  border: 1px solid #e6c7b8;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 26px 0 16px;
+}
+.uninstall-panel h2 { margin-bottom: 6px; font-size: 20px; }
+.uninstall-panel p { margin-bottom: 0; color: #5b534b; line-height: 1.45; }
+.uninstall-grid .package-group { border-color: #e6c7b8; }

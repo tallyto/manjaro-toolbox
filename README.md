@@ -7,6 +7,7 @@ O projeto foi criado para deixar em um só lugar os comandos que usamos para:
 - limpar cache do Pacman e AUR;
 - listar e remover pacotes órfãos;
 - instalar ferramentas úteis de terminal;
+- desinstalar pacotes selecionados de uma lista permitida;
 - instalar apps de mídia, desenvolvimento, backup e rede;
 - documentar o que foi removido ou mantido fora do menu.
 
@@ -25,7 +26,7 @@ http://127.0.0.1:8787
 
 ## Segurança
 
-O app não executa comandos livres digitados pelo usuário. Ele só roda scripts existentes na pasta `scripts/`, ações cadastradas em `actions.json` e pacotes de uma lista permitida no `app.py`, separando pacotes oficiais (`pacman`) de pacotes AUR (`yay`).
+O app não executa comandos livres digitados pelo usuário. Ele só roda scripts existentes na pasta `scripts/`, ações cadastradas em `actions.json` e pacotes de uma lista permitida no `app.py`, separando pacotes oficiais (`pacman`) de pacotes AUR (`yay`) para instalação e desinstalação.
 
 Na instalação selecionada, a senha sudo é enviada somente para o processo atual via `sudo -S` e não é salva. Ações rápidas que usam scripts ainda podem pedir senha no terminal onde o app está rodando.
 

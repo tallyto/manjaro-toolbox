@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manjaro Toolbox</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Manjaro / Arch</p>
+        <h1>Manjaro Toolbox</h1>
+      </div>
+      <button id="refresh" type="button">Atualizar</button>
+    </header>
+
+    <section class="status" aria-live="polite">
+      <span id="status-dot"></span>
+      <span id="status-text">Pronto</span>
+    </section>
+
+    <section id="actions" class="grid"></section>
+
+    <section class="output-panel">
+      <div class="output-header">
+        <h2>Saída</h2>
+        <button id="clear" type="button">Limpar</button>
+      </div>
+      <pre id="output">Selecione uma ação para executar.</pre>
+    </section>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>

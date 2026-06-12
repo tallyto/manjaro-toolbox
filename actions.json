@@ -1,0 +1,82 @@
+[
+  {
+    "id": "check-system",
+    "title": "Verificar Sistema",
+    "description": "Mostra espaço em disco, cache do usuário, cache do Pacman e pacotes órfãos.",
+    "script": "scripts/check-system.sh",
+    "category": "Diagnóstico",
+    "danger": "safe"
+  },
+  {
+    "id": "list-orphans",
+    "title": "Listar Órfãos",
+    "description": "Lista pacotes órfãos que podem ser avaliados para remoção.",
+    "script": "scripts/list-orphans.sh",
+    "category": "Limpeza",
+    "danger": "safe"
+  },
+  {
+    "id": "clean-pacman-cache",
+    "title": "Limpar Cache Pacman",
+    "description": "Usa paccache mantendo 2 versões e removendo cache de pacotes desinstalados.",
+    "script": "scripts/clean-pacman-cache.sh",
+    "category": "Limpeza",
+    "danger": "sudo"
+  },
+  {
+    "id": "clean-yay-cache",
+    "title": "Limpar Cache Yay/AUR",
+    "description": "Executa yay -Sc para limpar cache do AUR, se yay estiver instalado.",
+    "script": "scripts/clean-yay-cache.sh",
+    "category": "Limpeza",
+    "danger": "interactive"
+  },
+  {
+    "id": "remove-orphans",
+    "title": "Remover Órfãos",
+    "description": "Remove pacotes órfãos encontrados por pacman -Qdtq.",
+    "script": "scripts/remove-orphans.sh",
+    "category": "Limpeza",
+    "danger": "destructive"
+  },
+  {
+    "id": "install-terminal-tools",
+    "title": "Instalar Terminal Essencial",
+    "description": "Instala btop, ripgrep, bat, eza, fzf, fd, dust, duf, tldr, jq, yq, httpie, pacman-contrib e reflector.",
+    "script": "scripts/install-terminal-tools.sh",
+    "category": "Instalação",
+    "danger": "sudo"
+  },
+  {
+    "id": "install-extra-tools",
+    "title": "Instalar Extras Produtivos",
+    "description": "Instala KeePassXC, Restic, Nmap, LazyGit, LazyDocker, Delta, Zoxide, Starship e Rclone.",
+    "script": "scripts/install-extra-tools.sh",
+    "category": "Instalação",
+    "danger": "sudo"
+  },
+  {
+    "id": "install-vlc",
+    "title": "Instalar VLC",
+    "description": "Instala o VLC como reprodutor único de áudio e vídeo.",
+    "script": "scripts/install-vlc.sh",
+    "category": "Mídia",
+    "danger": "sudo"
+  },
+  {
+    "id": "install-creative-tools",
+    "title": "Instalar Design/Gravação",
+    "description": "Instala GIMP, Inkscape e OBS Studio.",
+    "script": "scripts/install-creative-tools.sh",
+    "category": "Mídia",
+    "danger": "sudo"
+  },
+  {
+    "id": "install-api-tools",
+    "title": "Instalar Ferramentas de API",
+    "description": "Instala Insomnia para testar APIs.",
+    "script": "scripts/install-api-tools.sh",
+    "category": "Desenvolvimento",
+    "danger": "sudo"
+  }
+]

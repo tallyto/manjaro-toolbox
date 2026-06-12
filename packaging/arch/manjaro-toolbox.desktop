@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Manjaro Toolbox
+Comment=Maintenance, install and uninstall helper for Manjaro
+Exec=manjaro-toolbox
+Icon=manjaro-toolbox
+Terminal=false
+Categories=System;Settings;Utility;
+Keywords=manjaro;arch;pacman;yay;maintenance;packages;
+StartupNotify=true

@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+APP_DIR="/opt/manjaro-toolbox"
+URL="http://127.0.0.1:8787"
+LOG_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/manjaro-toolbox"
+LOG_FILE="$LOG_DIR/server.log"
+
+usage() {
+  cat <<USAGE
+Manjaro Toolbox
+
+Usage:
+  manjaro-toolbox           Start the local server and open the browser
+  manjaro-toolbox --server  Run the server in the foreground
+  manjaro-toolbox --stop    Stop a running toolbox server
+  manjaro-toolbox --url     Print the local URL
+USAGE
+}
+
+is_running() {
+  pgrep -f "python3 -u $APP_DIR/app.py" >/dev/null 2>&1 ||   pgrep -f "python.*$APP_DIR/app.py" >/dev/null 2>&1
+}
+
+case "${1:-}" in
+  --help|-h)
+    usage
+    exit 0
+    ;;
+  --url)
+    printf '%s
+' "$URL"
+    exit 0
+    ;;
+  --server)
+    cd "$APP_DIR"
+    exec python3 -u app.py
+    ;;
+  --stop)
+    pkill -f "python3 -u $APP_DIR/app.py" 2>/dev/null || true
+    pkill -f "python.*$APP_DIR/app.py" 2>/dev/null || true
+    exit 0
+    ;;
+  "")
+    ;;
+  *)
+    usage >&2
+    exit 2
+    ;;
+esac
+
+mkdir -p "$LOG_DIR"
+if ! is_running; then
+  cd "$APP_DIR"
+  nohup python3 -u app.py >"$LOG_FILE" 2>&1 &
+fi
+
+sleep 0.8
+if command -v xdg-open >/dev/null 2>&1; then
+  xdg-open "$URL" >/dev/null 2>&1 &
+else
+  printf 'Open %s
+' "$URL"
+fi

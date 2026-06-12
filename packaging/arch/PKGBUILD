@@ -1,0 +1,32 @@
+# Maintainer: Tallyto <tallyto@users.noreply.github.com>
+pkgname=manjaro-toolbox
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Local web toolbox for Manjaro maintenance, package install and uninstall"
+arch=('any')
+url="https://github.com/tallyto/manjaro-toolbox"
+license=('MIT')
+depends=('python' 'xdg-utils' 'sudo' 'pacman')
+optdepends=('yay: install and remove AUR packages from the toolbox')
+makedepends=('git')
+source=("git+https://github.com/tallyto/manjaro-toolbox.git")
+sha256sums=('SKIP')
+
+pkgver() {
+  cd "$srcdir/$pkgname"
+  printf "0.1.%s.r%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+package() {
+  cd "$srcdir/$pkgname"
+
+  install -d "$pkgdir/opt/$pkgname"
+  cp -a app.py actions.json public scripts "$pkgdir/opt/$pkgname/"
+  chmod 755 "$pkgdir/opt/$pkgname/app.py"
+  chmod 755 "$pkgdir/opt/$pkgname"/scripts/*.sh
+
+  install -Dm755 packaging/arch/manjaro-toolbox "$pkgdir/usr/bin/manjaro-toolbox"
+  install -Dm644 packaging/arch/manjaro-toolbox.desktop "$pkgdir/usr/share/applications/manjaro-toolbox.desktop"
+  install -Dm644 packaging/arch/manjaro-toolbox.svg "$pkgdir/usr/share/icons/hicolor/scalable/apps/manjaro-toolbox.svg"
+  install -Dm644 README.md "$pkgdir/usr/share/doc/$pkgname/README.md"
+}

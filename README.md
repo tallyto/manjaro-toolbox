@@ -104,3 +104,31 @@ manjaro-toolbox/
   scripts/
     *.sh
 ```
+
+
+## Instalar Como App Linux
+
+No Manjaro/Arch, use o pacote local em `packaging/arch`:
+
+```bash
+cd ~/projetos/manjaro-toolbox/packaging/arch
+makepkg -si
+```
+
+Depois execute pelo menu de aplicativos ou pelo terminal:
+
+```bash
+manjaro-toolbox
+```
+
+Para parar o servidor local:
+
+```bash
+manjaro-toolbox --stop
+```
+
+Para desinstalar:
+
+```bash
+sudo pacman -Rns manjaro-toolbox
+```

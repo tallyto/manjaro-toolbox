@@ -26,9 +26,13 @@
         <h2>Instalação Selecionada</h2>
         <p>Escolha os pacotes, informe a senha sudo e instale tudo de uma vez. A senha não é salva.</p>
       </div>
-      <label>
+      <label class="password-field">
         Senha sudo
-        <input id="sudo-password" type="password" autocomplete="current-password" placeholder="Digite sua senha">
+        <span class="password-control">
+          <input id="sudo-password" type="password" autocomplete="current-password" placeholder="Digite sua senha">
+          <button id="toggle-password" type="button" class="secondary" aria-pressed="false">Mostrar</button>
+        </span>
+        <small>Use para conferir símbolos e layout do teclado. A senha não é salva.</small>
       </label>
       <div class="panel-actions">
         <button id="select-recommended" type="button" class="secondary">Selecionar recomendados</button>

@@ -9,6 +9,7 @@ const passwordInput = document.querySelector('#sudo-password')
 const installSelectedBtn = document.querySelector('#install-selected')
 const selectRecommendedBtn = document.querySelector('#select-recommended')
 const clearSelectionBtn = document.querySelector('#clear-selection')
+const togglePasswordBtn = document.querySelector('#toggle-password')
 
 const recommendedPackages = new Set([
   'vlc', 'btop', 'ripgrep', 'bat', 'eza', 'fzf', 'fd', 'dust', 'duf',
@@ -160,6 +161,13 @@ refreshBtn.addEventListener('click', async () => {
   await loadActions()
 })
 clearBtn.addEventListener('click', () => { outputEl.textContent = 'Saída limpa.' })
+togglePasswordBtn.addEventListener('click', () => {
+  const showing = passwordInput.type === 'text'
+  passwordInput.type = showing ? 'password' : 'text'
+  togglePasswordBtn.textContent = showing ? 'Mostrar' : 'Ocultar'
+  togglePasswordBtn.setAttribute('aria-pressed', String(!showing))
+  passwordInput.focus()
+})
 installSelectedBtn.addEventListener('click', installSelected)
 selectRecommendedBtn.addEventListener('click', () => {
   for (const input of document.querySelectorAll('[data-package]')) {

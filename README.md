@@ -25,7 +25,7 @@ http://127.0.0.1:8787
 
 ## Segurança
 
-O app não executa comandos livres digitados pelo usuário. Ele só roda scripts existentes na pasta `scripts/`, ações cadastradas em `actions.json` e pacotes de uma lista permitida no `app.py`.
+O app não executa comandos livres digitados pelo usuário. Ele só roda scripts existentes na pasta `scripts/`, ações cadastradas em `actions.json` e pacotes de uma lista permitida no `app.py`, separando pacotes oficiais (`pacman`) de pacotes AUR (`yay`).
 
 Na instalação selecionada, a senha sudo é enviada somente para o processo atual via `sudo -S` e não é salva. Ações rápidas que usam scripts ainda podem pedir senha no terminal onde o app está rodando.
 

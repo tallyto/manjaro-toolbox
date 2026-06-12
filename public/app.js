@@ -13,7 +13,7 @@ const togglePasswordBtn = document.querySelector('#toggle-password')
 
 const recommendedPackages = new Set([
   'vlc', 'btop', 'ripgrep', 'bat', 'eza', 'fzf', 'fd', 'dust', 'duf',
-  'tldr', 'jq', 'yq', 'httpie', 'pacman-contrib', 'reflector'
+  'tldr', 'jq', 'yq', 'httpie', 'pacman-contrib', 'reflector', 'postman-bin'
 ])
 
 function setStatus(text, state = 'ready') {
@@ -54,7 +54,7 @@ async function loadPackages() {
       label.innerHTML = `
         <input type="checkbox" data-package value="${item.name}">
         <span>
-          <strong>${item.name}</strong>
+          <strong>${item.name}${item.source === 'aur' ? ' · AUR' : ''}</strong>
           <small>${item.description}</small>
         </span>
       `

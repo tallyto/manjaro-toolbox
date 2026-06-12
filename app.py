@@ -3,6 +3,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 import json
 import mimetypes
+import shutil
 import subprocess
 import urllib.parse
 
@@ -35,7 +36,8 @@ PACKAGE_GROUPS = [
             {'name': 'jq', 'description': 'Manipular JSON'},
             {'name': 'yq', 'description': 'Manipular YAML'},
             {'name': 'httpie', 'description': 'Cliente HTTP amigável'},
-            {'name': 'insomnia', 'description': 'Cliente gráfico para APIs'},
+            {'name': 'postman-bin', 'description': 'Cliente gráfico para APIs (AUR)', 'source': 'aur'},
+            {'name': 'insomnia-bin', 'description': 'Cliente gráfico para APIs (AUR)', 'source': 'aur'},
             {'name': 'lazygit', 'description': 'Interface terminal para Git'},
             {'name': 'delta', 'description': 'Diff bonito para Git'},
             {'name': 'lazydocker', 'description': 'Interface terminal para Docker'},
@@ -70,7 +72,7 @@ PACKAGE_GROUPS = [
 ]
 
 ALLOWED_PACKAGES = {
-    package['name']
+    package['name']: package.get('source', 'pacman')
     for group in PACKAGE_GROUPS
     for package in group['packages']
 }
@@ -238,12 +240,49 @@ class Handler(BaseHTTPRequestHandler):
                     })
                     return
 
-            proc = run_sudo(['pacman', '-S', '--needed', '--noconfirm', *packages], password, 60 * 45)
-            output = (proc.stdout or '') + (proc.stderr or '')
+            pacman_packages = [package for package in packages if ALLOWED_PACKAGES[package] == 'pacman']
+            aur_packages = [package for package in packages if ALLOWED_PACKAGES[package] == 'aur']
+            outputs = []
+            ok = True
+            code = 0
+
+            if pacman_packages:
+                proc = run_sudo(['pacman', '-S', '--needed', '--noconfirm', *pacman_packages], password, 60 * 45)
+                outputs.append('== Pacotes oficiais ==\n' + ((proc.stdout or '') + (proc.stderr or '')).strip())
+                ok = ok and proc.returncode == 0
+                code = proc.returncode if proc.returncode != 0 else code
+                if proc.returncode != 0:
+                    self._send_json(200, {
+                        'ok': False,
+                        'code': proc.returncode,
+                        'output': '\n\n'.join(part for part in outputs if part).strip() or '(sem saída)'
+                    })
+                    return
+
+            if aur_packages:
+                if not shutil.which('yay'):
+                    self._send_json(200, {
+                        'ok': False,
+                        'code': 127,
+                        'output': 'yay não está instalado. Não foi possível instalar pacotes AUR: ' + ' '.join(aur_packages)
+                    })
+                    return
+                proc = subprocess.run(
+                    ['yay', '-S', '--needed', '--noconfirm', *aur_packages],
+                    input=sudo_input(password),
+                    cwd=str(ROOT),
+                    text=True,
+                    capture_output=True,
+                    timeout=60 * 60,
+                )
+                outputs.append('== Pacotes AUR ==\n' + ((proc.stdout or '') + (proc.stderr or '')).strip())
+                ok = ok and proc.returncode == 0
+                code = proc.returncode if proc.returncode != 0 else code
+
             self._send_json(200, {
-                'ok': proc.returncode == 0,
-                'code': proc.returncode,
-                'output': output.strip() or '(sem saída)'
+                'ok': ok,
+                'code': code,
+                'output': '\n\n'.join(part for part in outputs if part).strip() or '(sem saída)'
             })
         except subprocess.TimeoutExpired:
             self._send_json(408, {'ok': False, 'error': 'Tempo limite excedido.'})
